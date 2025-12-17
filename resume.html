@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alexander Mauger - Resume</title>
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    header {
+      background-color: #8B0000;
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+      position: relative;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+    }
+
+    header p {
+      margin: 0.5rem 0 0;
+      font-size: 1.1rem;
+    }
+
+    /* Print button styling */
+    .print-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background-color: #444;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .print-btn:hover {
+      background-color: #FF6347;
+      transform: scale(1.05);
+    }
+
+    nav {
+      background-color: #444;
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      padding: 0.8rem;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s, transform 0.3s;
+    }
+
+    nav a:hover {
+      color: #FF6347;
+      transform: scale(1.1);
+    }
+
+    section {
+      max-width: 900px;
+      margin: 2rem auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    section h2 {
+      color: #8B0000;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.3s;
+    }
+
+    section h2:hover {
+      border-color: #8B0000;
+    }
+
+    .card {
+      background: #eee;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 6px;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .card:hover {
+      background: #dcdcdc;
+      transform: translateY(-5px);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      background-color: #444;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Alexander Mauger</h1>
+    <p>(720) 828-1043 ∙ alexsmauger@gmail.com ∙ 
+      <a href="https://www.linkedin.com/in/alexander-mauger-2430b4376" style="color:white; text-decoration:underline;">
+        LinkedIn
+      </a>
+    </p>
+    <button class="print-btn" onclick="window.print()">Print to PDF</button>
+  </header>
+
+  <!-- Keep your nav and sections here -->
+    <nav>
+    <a href="#education">Education</a>
+    <a href="#experience">Experience</a>
+    <a href="#volunteer">Volunteer</a>
+    <a href="#skills">Skills</a>
+  </nav>
+
+  <section id="education">
+    <h2>Education</h2>
+    <div class="card">
+      <h3>Brigham Young University</h3>
+      <p>April 2030 Graduation — Provo, UT</p>
+      <p>Bachelor of Experience Design Management, Minor in Africana Studies</p>
+      <ul>
+        <li>GPA 4.00</li>
+        <li>Certificate in French, Learning SQL, VBA, and Tableau</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="experience">
+    <h2>Experience</h2>
+    <div class="card">
+      <h3>Susan M. Duncan YMCA of Denver</h3>
+      <p>Lifeguard — Arvada, CO (Jun 2018 - Dec 2022)</p>
+      <ul>
+        <li>Supervised patrons with 0 major incidents</li>
+        <li>Assisted clients and employees with concerns and pool protocol</li>
+        <li>Organized 4 responses to environmental disasters</li>
+        <li>Trained 3 new employees in safety and customer service</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Martin Schmidt Rental Properties</h3>
+      <p>Seasonal Laborer — Westminster, CO (Jul 2016 - Nov 2018)</p>
+      <ul>
+        <li>Serviced 5 properties in demolition, clean-up, and installation</li>
+        <li>Learned construction and rental policy skills</li>
+        <li>Helped fix 20+ urgent property issues</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="volunteer">
+    <h2>Volunteer Experience</h2>
+    <div class="card">
+      <h3>Church of Jesus Christ of Latter-Day Saints</h3>
+      <p>Full-time Representative — Phoenix, AZ (Jun 2023 - Jun 2025)</p>
+      <ul>
+        <li>Aided 15+ immigrants and at-risk persons with work/housing</li>
+        <li>Introduced 30 people to local communities</li>
+        <li>Organized and trained 30 representatives</li>
+        <li>Learned French and Swahili</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Somali American United Council</h3>
+      <p>English Teacher for Foreign Speakers — Phoenix, AZ (Dec 2024 - Jun 2025)</p>
+      <ul>
+        <li>Assisted ESL teachers in weekly instruction</li>
+        <li>Taught English to groups of 10-30 students</li>
+        <li>Built connections and resilience for 60+ students</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2>Skills</h2>
+    <div class="card">
+      <ul>
+        <li>Honors and Awards: Eagle Scout, NHS Councilmember, 4-year Honor Roll</li>
+        <li>Languages: Intermediate French, Intermediate-Low Swahili</li>
+        <li>Certifications: AED/CPR, Red Cross Lifeguard</li>
+        <li>Passionate about piano and African music</li>
+        <li>Novice Stick Welder</li>
+      </ul>
+    </div>
+  </section>
+
+ 
+
+
+  <footer>
+    <p>&copy; 2025 Alexander Mauger. All rights reserved.</p>
+  </footer>
+</body>
+</html>

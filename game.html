@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Hide & Seek Dot — Fixed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #0f1420;
+    --panel: #1b2333;
+    --text: #e8eef9;
+    --muted: #9fb3c8;
+    --accent: #7bd389;
+    --danger: #ff4d6d;
+    --goal: #5ec4ff;
+    --start: #b57edc;
+  }
+  body {
+    margin: 0;
+    background: radial-gradient(1000px 500px at 10% -10%, #101828, #0b1020 60%, #060912);
+    color: var(--text);
+    font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center horizontally */
+    justify-content: center; /* center vertically */
+    gap: 16px;
+  }
+
+  /* Centered board */
+  #board {
+    position: relative;
+    width: 720px;
+    height: 520px;
+    background: #111726;
+    border: 1px solid #273149;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+  }
+
+  /* Zones */
+  .zone {
+    position: absolute;
+    border: 2px dashed rgba(255,255,255,0.28);
+    border-radius: 10px;
+  }
+  #startZone { left: 14px; top: 14px; width: 140px; height: 110px; box-shadow: inset 0 0 0 2px rgba(181,126,220,0.35); }
+  #goalZone { right: 14px; bottom: 14px; width: 160px; height: 120px; box-shadow: inset 0 0 0 2px rgba(94,196,255,0.35); }
+  .zone-label {
+    position: absolute; left: 8px; top: 8px;
+    font-size: 12px; color: var(--muted);
+    background: rgba(0,0,0,0.2); padding: 3px 6px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  /* Player */
+  #player {
+    position: absolute;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff, #dbe0ff 18%, var(--accent) 60%, #2c7a4b 100%);
+    box-shadow: 0 0 10px rgba(123,211,137,0.6);
+  }
+
+  /* Enemies */
+  .enemy {
+    position: absolute;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff, #ffd6de 12%, var(--danger) 55%, #8a1f2f 100%);
+    box-shadow: 0 0 12px rgba(255,77,109,0.6);
+  }
+
+  /* Walls */
+  .wall {
+    position: absolute;
+    background: linear-gradient(180deg, #2a3550, #212a40);
+    border: 1px solid #2d3a57; border-radius: 8px;
+  }
+
+  /* HUD at bottom */
+  .hud {
+    width: 720px;
+    display: grid;
+    grid-template-columns: 1fr auto auto auto auto;
+    gap: 10px;
+    align-items: center;
+    background: var(--panel);
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #273149;
+  }
+  .pill {
+    background: #22304a;
+    border: 1px solid #2f415f;
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--muted);
+    display: inline-flex; gap: 6px;
+  }
+  .pill b { color: var(--text); }
+  .controls { display: inline-flex; gap: 8px; }
+  button, input[type="text"] {
+    background: #25314a; color: var(--text);
+    border: 1px solid #324465; border-radius: 10px;
+    padding: 8px 10px; font-size: 14px;
+  }
+  button:hover { border-color: var(--accent); }
+
+  /* Leaderboard list under HUD */
+  .lb {
+    width: 720px;
+    background: var(--panel);
+    border: 1px solid #273149;
+    border-radius: 12px;
+    padding: 10px;
+  }
+  .lb h4 { margin: 4px 0 10px; font-weight: 600; font-size: 14px; color: var(--muted); }
+  .lb-list {
+    list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;
+  }
+  .lb-list li {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #1e2a42; border: 1px solid #2c3d59; border-radius: 8px; padding: 8px 10px;
+  }
+  .lb .name { font-weight: 600; }
+  .lb .score { color: #ffb86b; font-weight: 700; }
+
+  /* Toast */
+  .toast {
+    position: absolute; left: 50%; top: 10px; transform: translateX(-50%);
+    background: rgba(15,20,32,0.9); padding: 8px 12px; border-radius: 8px;
+    border: 1px solid #273149; font-size: 13px; opacity: 0; transition: opacity 200ms ease;
+    pointer-events: none; color: var(--text);
+  }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 780px) {
+    #board, .hud, .lb { width: 94vw; }
+  }
+</style>
+</head>
+<body>
+  <div id="board" tabindex="0" role="application" aria-label="Move the dot to the goal">
+    <div id="startZone" class="zone"><div class="zone-label">Start</div></div>
+    <div id="goalZone" class="zone"><div class="zone-label">Goal</div></div>
+
+    <!-- Player -->
+    <div id="player"></div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="hud">
+    <div class="pill"><b>Score</b><span id="score">0</span></div>
+    <div class="pill"><b>Level</b><span id="level">1</span></div>
+    <div class="pill"><b>Lives</b><span id="lives">3</span></div>
+    <div class="pill"><b>Time</b><span id="time">0.0s</span></div>
+    <div class="controls">
+      <input id="playerName" type="text" placeholder="Your name" />
+      <button id="startBtn">Start</button>
+      <button id="pauseBtn">Pause</button>
+      <button id="resetLbBtn">Reset LB</button>
+    </div>
+  </div>
+
+  <div class="lb">
+    <h4>Leaderboard (Top 10 — saved in your browser)</h4>
+    <ul id="leaderboard" class="lb-list"></ul>
+  </div>
+
+<script>
+/* --- Elements --- */
+const board = document.getElementById('board');
+const playerEl = document.getElementById('player');
+const startZone = document.getElementById('startZone');
+const goalZone = document.getElementById('goalZone');
+const scoreEl = document.getElementById('score');
+const levelEl = document.getElementById('level');
+const livesEl = document.getElementById('lives');
+const timeEl  = document.getElementById('time');
+const toastEl = document.getElementById('toast');
+const nameInput = document.getElementById('playerName');
+const startBtn = document.getElementById('startBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const resetLbBtn = document.getElementById('resetLbBtn');
+const lbEl = document.getElementById('leaderboard');
+
+/* --- State --- */
+const state = {
+  running: false,
+  paused: false,
+  lives: 3,
+  level: 1,
+  score: 0,
+  startTime: 0,
+  elapsed: 0,
+  player: { x: 0, y: 0, speed: 2.3 },
+  input: { up:false,down:false,left:false,right:false },
+  enemies: [],
+  walls: []
+};
+
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+const now = () => performance.now();
+
+/* --- Leaderboard --- */
+const LB_KEY = 'hide_seek_lb_v2';
+function loadLB() { try { return JSON.parse(localStorage.getItem(LB_KEY)) || []; } catch { return []; } }
+function saveLB(list) { localStorage.setItem(LB_KEY, JSON.stringify(list.slice(0,10))); }
+function renderLB() {
+  const list = loadLB().slice(0,10);
+  lbEl.innerHTML = '';
+  list.forEach((item,i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="name">${i+1}. ${item.name}</span><span class="score">${item.score}</span>`;
+    lbEl.appendChild(li);
+  });
+}
+
+/* --- Player --- */
+function setPlayerToStart() {
+  const s = startZone.getBoundingClientRect();
+  const b = board.getBoundingClientRect();
+  const px = s.left - b.left + s.width/2 - 7;
+  const py = s.top  - b.top  + s.height/2 - 7;
+  state.player.x = px; state.player.y = py;
+  playerEl.style.left = px + 'px';
+  playerEl.style.top  = py + 'px';
+}
+function movePlayer(dt) {
+  const sp = state.player.speed * dt * 0.12;
+  let vx=0, vy=0;
+  if (state.input.left) vx -= sp;
+  if (state.input.right) vx += sp;
+  if (state.input.up) vy -= sp;
+  if (state.input.down) vy += sp;
+  if (vx && vy) { vx *= 0.7071; vy *= 0.7071; }
+  state.player.x = clamp(state.player.x + vx, 0, board.clientWidth  - 14);
+  state.player.y = clamp(state.player.y + vy, 0, board.clientHeight - 14);
+  playerEl.style.left = state.player.x + 'px';
+  playerEl.style.top  = state.player.y + 'px';
+}
+
+/* --- Enemies + Walls (randomized each level) --- */
+function randRange(a,b){ return a + Math.random()*(b-a); }
+function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function clearEnemiesAndWalls() {
+  state.enemies.forEach(e => e.el.remove());
+  state.walls.forEach(w => w.remove());
+  state.enemies = []; state.walls = [];
+}
+
+function spawnEnemies(level) {
+  const count = Math.min(3 + level, 8);
+  for (let i=0;i<count;i++) {
+    const el = document.createElement('div');
+    el.className = 'enemy';
+    board.appendChild(el);
+    const cx = randRange(160, board.clientWidth-160);
+    const cy = randRange(140, board.clientHeight-140);
+    const path = randChoice(['h','v','orbit','zig']);
+    const speed = 1.6 + level*0.35 + Math.random()*0.3;
+    state.enemies.push({ el, x:cx, y:cy, t:Math.random()*1000, path, speed });
+    el.style.left = cx + 'px';
+    el.style.top  = cy + 'px';
+  }
+}
+
+function spawnWalls(level) {
+  const count = Math.min(2 + level, 8);
+  for (let i=0;i<count;i++) {
+    const w = document.createElement('div');
+    w.className = 'wall';
+    const vertical = Math.random() < 0.5;
+    const width  = vertical ? 12 : randRange(120, 200);
+    const height = vertical ? randRange(120, 220) : 12;
+    const left = randRange(40, board.clientWidth - 40 - width);
+    const top  = randRange(40, board.clientHeight - 40 - height);
+    w.style.left = left + 'px'; w.style.top = top + 'px';
+    w.style.width = width + 'px'; w.style.height = height + 'px';
+    board.appendChild(w);
+    state.walls.push(w);
+  }
+}
+
+function moveEnemies(dt) {
+  state.enemies.forEach(e => {
+    e.t += dt * e.speed * 0.002;
+    let x=e.x, y=e.y;
+    if (e.path === 'h')      x = e.x + Math.sin(e.t) * 160;
+    else if (e.path === 'v') y = e.y + Math.cos(e.t) * 160;
+    else if (e.path === 'orbit') { x = e.x + Math.cos(e.t*1.3) * 90; y = e.y + Math.sin(e.t*1.3) * 90; }
+    else if (e.path === 'zig')   { x = e.x + Math.sin(e.t*2.0) * 120; y = e.y + Math.sin(e.t*1.0) * 80; }
+    e.el.style.left = x + 'px'; e.el.style.top = y + 'px';
+  });
+}
+
+/* --- Collision --- */
+function circleHit(ax, ay, ar, bx, by, br) {
+  const dx = ax - bx, dy = ay - by;
+  return Math.hypot(dx, dy) <= ar + br;
+}
+function rectHitCircle(rx, ry, rw, rh, cx, cy, cr) {
+  const px = clamp(cx, rx, rx + rw);
+  const py = clamp(cy, ry, ry + rh);
+  const dx = cx - px, dy = cy - py;
+  return dx*dx + dy*dy <= cr*cr;
+}
+function checkCollisions() {
+  const pRect = playerEl.getBoundingClientRect();
+  const bRect = board.getBoundingClientRect();
+  const px = pRect.left - bRect.left + 7;
+  const py = pRect.top  - bRect.top  + 7;
+
+  //Border penalty
+  if (state.player.x <= 7 || state.player.x >= board.clientWidth - 7 ||
+      state.player.y <= 7 || state.player.y >= board.clientHeight - 7) {
+    return 'border';
+  }
+
+  // Enemies
+  for (const e of state.enemies) {
+    const er = e.el.getBoundingClientRect();
+    const ex = er.left - bRect.left + 8;
+    const ey = er.top  - bRect.top  + 8;
+    if (circleHit(px, py, 7, ex, ey, 8)) return 'enemy';
+  }
+  // Walls
+  for (const w of state.walls) {
+    const r = w.getBoundingClientRect();
+    const rx = r.left - bRect.left, ry = r.top - bRect.top;
+    if (rectHitCircle(rx, ry, r.width, r.height, px, py, 7)) return 'wall';
+  }
+  // Goal
+  const g = goalZone.getBoundingClientRect();
+  const gx = g.left - bRect.left, gy = g.top - bRect.top;
+  if (px > gx && px < gx + g.width && py > gy && py < gy + g.height) return 'goal';
+  return null;
+}
+
+/* --- Scoring / Flow --- */
+function computeWinPoints(timeMs, level) {
+  const base = 120 * level;
+  const bonus = Math.max(0, 100 - timeMs/1000) * 4; // faster => more points
+  return Math.round(base + bonus);
+}
+
+let rafId = 0, lastTick = 0;
+function tick(ts) {
+  if (!state.running || state.paused) return;
+  if (!lastTick) lastTick = ts;
+  const dt = ts - lastTick; lastTick = ts;
+
+  movePlayer(dt);
+  moveEnemies(dt);
+
+  const hit = checkCollisions();
+  if (hit === 'enemy' || hit === 'wall'|| hit === 'border') {
+    state.lives--;
+    livesEl.textContent = state.lives;
+    toast(hit === 'enemy' ? 'Caught!' :
+        hit === 'wall'  ? 'Bumped a wall!' :'Out of bounds!');
+
+    setPlayerToStart();
+    if (state.lives <= 0) return endGame(false);
+  } else if (hit === 'goal') {
+    const t = now() - state.startTime;
+    const pts = computeWinPoints(t, state.level);
+    state.score += pts;
+    scoreEl.textContent = state.score;
+    toast(`Goal! +${pts}`);
+    nextLevel();
+  }
+
+  state.elapsed = now() - state.startTime;
+  timeEl.textContent = (state.elapsed/1000).toFixed(1) + 's';
+
+  rafId = requestAnimationFrame(tick);
+}
+
+function startGame() {
+  cancelAnimationFrame(rafId);
+  state.running = true;
+  state.paused = false;
+  state.lives = 3;
+  state.level = 1;
+  state.score = 0;
+  scoreEl.textContent = state.score;
+  levelEl.textContent = state.level;
+  livesEl.textContent = state.lives;
+  setPlayerToStart();
+  regenerateLevel();
+  state.startTime = now();
+  lastTick = 0;
+  rafId = requestAnimationFrame(tick);
+  board.focus();
+}
+
+function pauseGame() {
+  state.paused = !state.paused;
+  pauseBtn.textContent = state.paused ? 'Resume' : 'Pause';
+  if (!state.paused && state.running) {
+    lastTick = 0;
+    rafId = requestAnimationFrame(tick);
+  }
+}
+
+ 
+
+
+function nextLevel() {
+  state.level++;
+  levelEl.textContent = state.level;
+  regenerateLevel();
+  setPlayerToStart();
+  state.startTime = now();
+  // Win at level 6
+  if (state.level > 7) endGame(true);
+}
+
+function regenerateLevel() {
+  clearEnemiesAndWalls();
+  spawnWalls(state.level);
+  spawnEnemies(state.level);
+}
+
+function endGame(won) {
+  cancelAnimationFrame(rafId);
+  state.running = false;
+  toast(won ? `You win! Final score: ${state.score}` : `Game over — score: ${state.score}`, 1800);
+  const name = (nameInput.value || 'Player').trim().slice(0,20);
+  const lb = loadLB();
+  lb.push({ name, score: state.score, date: Date.now() });
+  lb.sort((a,b) => b.score - a.score);
+  saveLB(lb);
+  renderLB();
+}
+
+/* --- Toast --- */
+let toastTimer = 0;
+function toast(msg, ms=1200) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), ms);
+}
+
+/* --- Input --- */
+const keys = {
+  ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right',
+  w:'up', s:'down', a:'left', d:'right', W:'up', S:'down', A:'left', D:'right'
+};
+window.addEventListener('keydown', e => { if (keys[e.key]) state.input[keys[e.key]] = true; });
+window.addEventListener('keyup',   e => { if (keys[e.key]) state.input[keys[e.key]] = false; });
+window.addEventListener('blur', () => { state.input = {up:false,down:false,left:false,right:false}; });
+
+/* --- Buttons --- */
+startBtn.addEventListener('click', startGame);
+pauseBtn.addEventListener('click', pauseGame);
+resetLbBtn.addEventListener('click', () => { localStorage.removeItem(LB_KEY); renderLB(); toast('Leaderboard reset'); });
+
+/* --- Init --- */
+renderLB();
+setPlayerToStart();
+</script>
+<a href="index.html">To Scratch Page</a>
+</body>
+</html>

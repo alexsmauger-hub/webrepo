@@ -1,0 +1,21 @@
+body{
+    color:black;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+#top{text-align: center;
+text-decoration: underline;}
+h3{font-weight: bold;
+}
+
+.common{font-family:Arial, Helvetica, sans-serif
+}
+
+.right{
+    top:115px;
+    right:0px;
+    width: 400px;
+    border:2px solid black;
+    
+
+}
+
